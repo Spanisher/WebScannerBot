@@ -57,17 +57,26 @@ def command_start(m):
 def command_scan(m):
 	cid=m.chat.id
 	nombre = m.text[6:]
-	if (nombre[0:3] != "www"):
-		scanBot.send_message(cid, "Introduce una direccion válida www.loquesea.com")
-	else:
+	if (nombre[0:3] == "www"):
 		botones=types.ReplyKeyboardMarkup(one_time_keyboard=True,row_width=2)
-		botones.add("ROBOTS","PUERTOS","WHOIS")		
+		botones.add("ROBOTS","PUERTOS","WHOIS","SHODAN")		
 		print(nombre[4:])
 		scanBot.send_chat_action(cid, 'typing')
 		gather_info(nombre[4:],"http://"+nombre,'-v -sV')
 		userProj[cid]=nombre[4:]
 		scanBot.send_message(cid,'elige algo pa descargar',reply_markup=botones)
 		userStep[cid]=2
+	elif ((nombre[0].isdigit()) and (nombre[-1].isdigit())):
+		botones=types.ReplyKeyboardMarkup(one_time_keyboard=True,row_width=2)
+		botones.add("INFO","SHODAN")
+		print(nombre)
+		scanBot.send_chat_action(cid, 'typing')
+		gather_info_ip(nombre)
+		userProj[cid]=nombre
+		scanBot.send_message(cid,'elige algo pa descargar',reply_markup=botones)
+		userStep[cid]=2
+	else:
+		scanBot.send_message(cid, "Introduce una direccion válida www.loquesea.com")
 
 @scanBot.message_handler(func=lambda message: get_user_step(message.chat.id)==2)
 def manejo_descarga(m):
@@ -78,6 +87,10 @@ def manejo_descarga(m):
 		scanBot.send_document(cid,open("www/"+userProj[cid]+" "+str(date.today())+"/nmap.txt", 'rb'), reply_markup=hideBoard)
 	elif m.text=='WHOIS':
 		scanBot.send_document(cid,open("www/"+userProj[cid]+" "+str(date.today())+"/whois.txt", 'rb'), reply_markup=hideBoard)
+	elif m.text=='INFO':
+		scanBot.send_document(cid,open("www/"+userProj[cid]+" "+str(date.today())+"/reverse_dns.txt", 'rb'), reply_markup=hideBoard)
+	elif m.text=='SHODAN':
+		scanBot.send_document(cid,open("www/"+userProj[cid]+" "+str(date.today())+"/shodan_info.txt", 'rb'), reply_markup=hideBoard)
 	else:
 		scanBot.send_message(cid,'carota')
 
